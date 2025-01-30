@@ -30,7 +30,7 @@ void FootStepPlanner::load_configuration(const std::string & path)
   // Load the configuration from the specified path
 }
 
-std::vector<FootStepPlanner::FootStep> FootStepPlanner::plan(
+const std::list<FootStep> & FootStepPlanner::plan(
   const keisan::Point2 & target_position, const keisan::Angle<double> & target_orientation,
   const keisan::Point2 & current_position, const keisan::Angle<double> & current_orientation,
   int next_support, int status)
@@ -50,7 +50,7 @@ std::vector<FootStepPlanner::FootStep> FootStepPlanner::plan(
   double stride_angle = (target_orientation.degree - current_orientation.degree()) / max_steps;
 
   // Plan first foot step
-  std::vector<FootStep> foot_steps;
+  foot_steps.clear();
   if (status == FootStepPlanner::START) {
     foot_steps.push_back({0.0, current_position, current_orientation, FootStepPlanner::BOTH_FEET});
     time += period * 2;

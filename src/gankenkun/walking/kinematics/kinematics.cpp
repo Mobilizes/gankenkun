@@ -30,6 +30,7 @@ void Gankenkun::load_configuration(const std::string & path)
   // Load configuration from the specified path
 }
 
+// TODO: Handle exceptions
 void Gankenkun::solve_inverse_kinematics(const Foot & left_foot, const Foot & right_foot)
 {
   double left_x = left_foot.position.x - x_offset;

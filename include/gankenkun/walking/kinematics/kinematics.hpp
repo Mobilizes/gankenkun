@@ -39,9 +39,9 @@ public:
     keisan::Angle<double> yaw;
   };
 
-  Kinematics(const std::string & path);
+  Kinematics();
 
-  void load_configuration(const std::string & path);
+  void set_config(const nlohmann::json & kinematic_data);
   void solve_inverse_kinematics(const Foot & left_foot, const Foot & right_foot);
 
   const std::array<keisan::Angle<double>, 19> & get_angles() const { return angles; }

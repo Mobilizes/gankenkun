@@ -38,7 +38,8 @@ public:
 
   enum {
     START = 0,
-    STOP = 1
+    WALKING = 1,
+    STOP = 2
   }
 
   struct FootStep
@@ -49,13 +50,18 @@ public:
     int support_foot;
   }
 
-  FootStepPlanner(const std::string & path);
+  FootStepPlanner();
 
-  void load_configuration(const std::string & path);
-  std::vector<FootStep> plan(
+  void set_parameters(
+    const keisan::Point2 & max_stride, const keisan::Angle<double> & max_rotation, double period,
+    double width);
+
+  void plan(
     const keisan::Point2 & target_position, const keisan::Angle<double> & target_orientation,
     const keisan::Point2 & current_position, const keisan::Angle<double> & current_orientation,
     int next_support, int status);
+
+  std::list<FootStep> foot_steps;
 
 private:
   keisan::Point2 max_stride;
