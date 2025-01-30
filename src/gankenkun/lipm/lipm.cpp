@@ -35,6 +35,14 @@ LIPM::LIPM(double z, double dt, double period)
 // Initialize the discrete-time LTI system matrices
 LIPM::initialize()
 {
+  // Initialize outputs
+  x_state = keisan::Matrix<3, 1>::zero();
+  y_state = keisan::Matrix<3, 1>::zero();
+
+  velocity.x = 0.0;
+  velocity.y = 0.0;
+
+  // Continuous-time system matrices
   auto A = keisan::Matrix<3, 3>(
     0.0, 1.0, 0.0,
     0.0, 0.0, 1.0,
@@ -141,6 +149,69 @@ LIPM::solve_dare()
     auto fi = (-T) * G.transpose() * xiT.power(i - 1)  * P * GR;
 
     f.push_back(fi[0][0]);
+  }
+}
+
+// Update the LIPM state
+LIPM::update(double time, const std::list<FootStepPlanner::FootStep> & foot_steps, bool reset)
+{
+  if (reset) {
+    velocity.x = 0.0;
+    velocity.y = 0.0;
+  }
+
+  com_trajectory.clear();
+  auto next_x_state = x_state;
+  auto next_y_state = y_state;
+
+  for (int i = 0; i < static_cast<int>(round((foot_steps[1].time - t) / dt)); i++) {
+    auto projected_x = C_d * x_state;
+    auto projected_y = C_d * y_state;
+
+    auto error_x = foot_steps.front().position.x - projected_x[0][0];
+    auto error_y = foot_steps.front().position.y - projected_y[0][0];
+
+    auto X = keisan::Matrix<4, 1>(
+      error_x,
+      next_x_state[0][0] - x_state[0][0],
+      next_x_state[1][0] - x_state[1][0],
+      next_x_state[2][0] - x_state[2][0]);
+
+    auto Y = keisan::Matrix<4, 1>(
+      error_y,
+      next_y_state[0][0] - y_state[0][0],
+      next_y_state[1][0] - y_state[1][0],
+      next_y_state[2][0] - y_state[2][0]);
+    
+    x_state = next_x_state;
+    y_state = next_y_state;
+
+    auto dx = F * X;
+    auto dy = F * Y;
+
+    size_t index = 1;
+    for (int j = 0; j < static_cast<int>(round(period / dt)); j++) {
+      if (static_cast<int>(round(i+j) + time / dt) >= static_cast<int>(round(foot_steps[index].time / dt))) {
+        dx += f[j] * (foot_steps[index].position.x - foot_steps[index - 1].position.x);
+        dy += f[j] * (foot_steps[index].position.y - foot_steps[index - 1].position.y);
+        index++;
+      }
+    }
+
+    velocity.x += dx[0][0];
+    velocity.y += dy[0][0];
+
+    next_x_state = A_d * x_state + B_d * dx;
+    next_y_state = A_d * y_state + B_d * dy;
+
+    auto com = COMTrajectory();
+
+    com.position.x = next_x_state[0][0];
+    com.position.y = next_y_state[0][0];
+    com.projected_position.x = projected_x[0][0];
+    com.projected_position.y = projected_y[0][0];
+
+    com_trajectory.push_back(com);
   }
 }
 

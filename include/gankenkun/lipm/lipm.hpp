@@ -29,25 +29,42 @@ namespace gankenkun
 class LIPM
 {
 public:
-  LIPM(double z, double dt = 0.01, double period = 1.0);
+  LIPM();
   ~LIPM() {}
 
   void initialize();
   void solve_dare();
 
-private:
+  void update(
+    double time, const std::list<FootStepPlanner::FootStep> & foot_steps, bool reset = false);
+
+  const std::vector<COMTrajectory> & get_com_trajectory() const { return com_trajectory; }
+
   double dt;
   double period;
   double z;
 
+  struct COMTrajectory
+  {
+    keisan::Point2 position;
+    keisan::Point2 projected_position;
+  };
+
+private:
   // Discrete-time system matrices
   keisan::Matrix<3, 3> A_d;
   keisan::Matrix<3, 1> B_d;
   keisan::Matrix<1, 3> C_d;
 
   // Gain matrix
-  keisan::Matrix<1, 4> F; // Feedback gain
-  std::vector<double> f; // Preview gain
+  keisan::Matrix<1, 4> F;  // Feedback gain
+  std::vector<double> f;   // Preview gain
+
+  // Outputs
+  keisan::Matrix<3, 1> x_state;
+  keisan::Matrix<3, 1> y_state;
+  keisan::Point2 velocity;
+  std::vector<COMTrajectory> com_trajectory;
 };
 
 }  // namespace gankenkun
