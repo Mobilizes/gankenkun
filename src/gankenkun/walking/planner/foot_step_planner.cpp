@@ -45,9 +45,15 @@ const std::list<FootStep> & FootStepPlanner::plan(
     std::abs(((target_orientation.degree - current_orientation).degree()) / max_rotation.degree());
   int max_steps = std::max(std::max(steps_x, steps_y), steps_angle);
 
-  double stride_x = (target_position.x - current_position.x) / max_steps;
-  double stride_y = (target_position.y - current_position.y) / max_steps;
-  double stride_angle = (target_orientation.degree - current_orientation.degree()) / max_steps;
+  double stride_x = 0.0;
+  double stride_y = 0.0;
+  double stride_angle = 0.0;
+
+  if (max_steps > 0) {
+    stride_x = (target_position.x - current_position.x) / max_steps;
+    stride_y = (target_position.y - current_position.y) / max_steps;
+    stride_angle = (target_orientation.degree - current_orientation.degree()) / max_steps;
+  }
 
   // Plan first foot step
   foot_steps.clear();
