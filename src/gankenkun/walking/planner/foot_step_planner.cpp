@@ -23,11 +23,19 @@
 namespace gankenkun
 {
 
-FootStepPlanner::FootStepPlanner(const std::string & path) { load_configuration(path); }
-
-void FootStepPlanner::load_configuration(const std::string & path)
+FootStepPlanner::FootStepPlanner()
+: period(0.0), width(0.0), max_stride(0.0, 0.0), max_rotation(0.0_deg)
 {
-  // Load the configuration from the specified path
+}
+
+void FootStepPlanner::set_parameters(
+  double period, double width, const keisan::Point2 & max_stride,
+  const keisan::Angle<double> & max_rotation)
+{
+  this->period = period;
+  this->width = width;
+  this->max_stride = max_stride;
+  this->max_rotation = max_rotation;
 }
 
 const std::list<FootStep> & FootStepPlanner::plan(

@@ -39,12 +39,14 @@ public:
 
   void load_config(const std::string & path);
   void set_config(const nlohmann::json & walking_data, const nlohmann::json & kinematic_data);
-  void update();
+
+  void stop();
+  void update_joints();
 
   const std::array<keisan::Angle<double>, 19> & get_angles() const;
 
-  const std::list<FootStep> & set_goal_position(
-    const keisan::Point2 & goal_position = keisan::Point2(-1, -1));
+  void set_goal(
+    const keisan::Point2 & goal_position, const keisan::Angle<double> & goal_orientation);
 
 private:
   Kinematics kinematics;
@@ -55,22 +57,35 @@ private:
   int next_support;
   keisan::Angle<double> walk_orientation;
 
-  double offset_ratio;
+  // Timing parameters
+  double time_step;
+  double dsp_duration;
+  double ssp_duration;
+  double step_frames;
 
-  double dt;
+  // Posture parameters
+  double com_height;
+  double foot_height;
+  double feet_lateral;
+
+  // Offset parameters
+  double foot_y_offset;
+
+  // Maximum stride parameters
+  keisan::Point2 max_stride;
+  keisan::Angle<double> max_rotation;
 
   double foot_width;
-  double foot_height;
   double left_up;
   double right_up;
 
   keisan::Matrix<1, 3> left_offset = keisan::Matrix<1, 3>::zero();
-  keisan::Matrix<1, 3> left_offset_g = keisan::Matrix<1, 3>::zero();
-  keisan::Matrix<1, 3> left_offset_d = keisan::Matrix<1, 3>::zero();
+  keisan::Matrix<1, 3> left_offset_delta = keisan::Matrix<1, 3>::zero();
+  keisan::Matrix<1, 3> left_foot_target = keisan::Matrix<1, 3>::zero();
 
   keisan::Matrix<1, 3> right_offset = keisan::Matrix<1, 3>::zero();
-  keisan::Matrix<1, 3> right_offset_g = keisan::Matrix<1, 3>::zero();
-  keisan::Matrix<1, 3> right_offset_d = keisan::Matrix<1, 3>::zero();
+  keisan::Matrix<1, 3> right_offset_delta = keisan::Matrix<1, 3>::zero();
+  keisan::Matrix<1, 3> right_foot_target = keisan::Matrix<1, 3>::zero();
 };
 
 }  // namespace gankenkun

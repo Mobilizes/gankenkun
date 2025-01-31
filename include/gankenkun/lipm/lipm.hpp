@@ -38,6 +38,8 @@ public:
   void update(
     double time, const std::list<FootStepPlanner::FootStep> & foot_steps, bool reset = false);
 
+  COMTrajectory pop_front();
+
   const std::vector<COMTrajectory> & get_com_trajectory() const { return com_trajectory; }
 
   double dt;

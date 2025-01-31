@@ -37,9 +37,11 @@ public:
   {
     keisan::Point3<double> position;
     keisan::Angle<double> yaw;
+
+    Foot() : position(0.0, 0.0, 0.0), yaw(0.0_deg) {}
   };
 
-  Kinematics();
+  Kinematics() {}
 
   void set_config(const nlohmann::json & kinematic_data);
   void solve_inverse_kinematics(const Foot & left_foot, const Foot & right_foot);

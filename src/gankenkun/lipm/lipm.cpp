@@ -23,17 +23,23 @@
 namespace gankenkun
 {
 
-LIPM::LIPM(double z, double dt, double period)
-: dt(dt),
-  period(period),
-  z(z)
+LIPM::LIPM()
+: dt(0.0), period(0.0), z(0.0)
 {
+}
+
+void LIPM::set_parameters(double z, double dt, double period)
+{
+  this->z = z;
+  this->dt = dt;
+  this->period = period;
+
   initialize();
   solve_dare();
 }
 
 // Initialize the discrete-time LTI system matrices
-LIPM::initialize()
+void LIPM::initialize()
 {
   // Initialize outputs
   x_state = keisan::Matrix<3, 1>::zero();
@@ -72,7 +78,7 @@ LIPM::initialize()
 }
 
 // Solve the discrete-time algebraic Riccati equation
-LIPM::solve_dare()
+void LIPM::solve_dare()
 {
   auto E_d = keisan::Matrix<3, 1>(
     dt,
@@ -153,7 +159,7 @@ LIPM::solve_dare()
 }
 
 // Update the LIPM state
-LIPM::update(double time, const std::list<FootStepPlanner::FootStep> & foot_steps, bool reset)
+void LIPM::update(double time, const std::list<FootStepPlanner::FootStep> & foot_steps, bool reset)
 {
   if (reset) {
     velocity.x = 0.0;
@@ -213,6 +219,15 @@ LIPM::update(double time, const std::list<FootStepPlanner::FootStep> & foot_step
 
     com_trajectory.push_back(com);
   }
+}
+
+// Pop the front of the COM trajectory
+COMTrajectory LIPM::pop_front()
+{
+  auto com = com_trajectory.front();
+  com_trajectory.pop_front();
+
+  return com;
 }
 
 } // namespace gankenkun
