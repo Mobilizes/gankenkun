@@ -20,6 +20,8 @@
 
 #include "gankenkun/walking/planner/foot_step_planner.hpp"
 
+using namespace keisan::literals;
+
 namespace gankenkun
 {
 
@@ -29,8 +31,8 @@ FootStepPlanner::FootStepPlanner()
 }
 
 void FootStepPlanner::set_parameters(
-  double period, double width, const keisan::Point2 & max_stride,
-  const keisan::Angle<double> & max_rotation)
+  const keisan::Point2 & max_stride, const keisan::Angle<double> & max_rotation, double period,
+  double width)
 {
   this->period = period;
   this->width = width;
@@ -38,10 +40,10 @@ void FootStepPlanner::set_parameters(
   this->max_rotation = max_rotation;
 }
 
-const std::list<FootStep> & FootStepPlanner::plan(
+void FootStepPlanner::plan(
   const keisan::Point2 & target_position, const keisan::Angle<double> & target_orientation,
-  const keisan::Point2 & current_position, const keisan::Angle<double> & current_orientation,
-  int next_support, int status)
+  keisan::Point2 & current_position, keisan::Angle<double> & current_orientation, int next_support,
+  int status)
 {
   // Calculate the number of foot step
   double time = 0.0;
@@ -50,7 +52,7 @@ const std::list<FootStep> & FootStepPlanner::plan(
   double steps_x = std::abs((target_position.x - current_position.x) / max_stride.x);
   double steps_y = std::abs((target_position.y - current_position.y) / max_stride.y);
   double steps_angle =
-    std::abs(((target_orientation.degree - current_orientation).degree()) / max_rotation.degree());
+    std::abs(((target_orientation - current_orientation).degree()) / max_rotation.degree());
   int max_steps = std::max(std::max(steps_x, steps_y), steps_angle);
 
   double stride_x = 0.0;
@@ -60,26 +62,26 @@ const std::list<FootStep> & FootStepPlanner::plan(
   if (max_steps > 0) {
     stride_x = (target_position.x - current_position.x) / max_steps;
     stride_y = (target_position.y - current_position.y) / max_steps;
-    stride_angle = (target_orientation.degree - current_orientation.degree()) / max_steps;
+    stride_angle = (target_orientation.degree() - current_orientation.degree()) / max_steps;
   }
 
   // Plan first foot step
   foot_steps.clear();
-  if (status == FootStepPlanner::START) {
-    foot_steps.push_back({0.0, current_position, current_orientation, FootStepPlanner::BOTH_FEET});
+  if (status == START) {
+    foot_steps.push_back({0.0, current_position, current_orientation, BOTH_FEET});
     time += period * 2;
   }
 
-  if (next_support == FootStepPlanner::LEFT_FOOT) {
+  if (next_support == LEFT_FOOT) {
     foot_steps.push_back(
       {time, keisan::Point2(current_position.x, current_position.y + width), current_orientation,
-       FootStepPlanner::LEFT_FOOT});
-    next_support = FootStepPlanner::RIGHT_FOOT;
+       LEFT_FOOT});
+    next_support = RIGHT_FOOT;
   } else {
     foot_steps.push_back(
       {time, keisan::Point2(current_position.x, current_position.y - width), current_orientation,
-       FootStepPlanner::RIGHT_FOOT});
-    next_support = FootStepPlanner::LEFT_FOOT;
+       RIGHT_FOOT});
+    next_support = LEFT_FOOT;
   }
 
   // Plan walking foot steps
@@ -92,25 +94,25 @@ const std::list<FootStep> & FootStepPlanner::plan(
 
     if (
       delta_position.x < max_stride.x && delta_position.y < max_stride.y &&
-      delta_orientation.degree() < max_rotation.degree()) {
+      delta_orientation < max_rotation) {
       break;
     }
 
     time += period;
 
     auto next_position = current_position + keisan::Point2(stride_x, stride_y);
-    auto next_orientation = current_orientation + keisan::Angle<double>(stride_angle);
+    auto next_orientation = current_orientation + keisan::make_degree(stride_angle);
 
-    if (next_support == FootStepPlanner::LEFT_FOOT) {
+    if (next_support == LEFT_FOOT) {
       foot_steps.push_back(
         {time, keisan::Point2(next_position.x, next_position.y + width), next_orientation,
-         FootStepPlanner::LEFT_FOOT});
-      next_support = FootStepPlanner::RIGHT_FOOT;
+         LEFT_FOOT});
+      next_support = RIGHT_FOOT;
     } else {
       foot_steps.push_back(
         {time, keisan::Point2(next_position.x, next_position.y - width), next_orientation,
-         FootStepPlanner::RIGHT_FOOT});
-      next_support = FootStepPlanner::LEFT_FOOT;
+         RIGHT_FOOT});
+      next_support = LEFT_FOOT;
     }
 
     current_position = next_position;
@@ -118,31 +120,29 @@ const std::list<FootStep> & FootStepPlanner::plan(
   }
 
   // Planning walk in position
-  if (status != FootStepPlanner::STOP) {
+  if (status != STOP) {
     time += period;
 
-    if (next_support == FOOT_STEP_PLANNER::LEFT_FOOT) {
+    if (next_support == LEFT_FOOT) {
       foot_steps.push_back(
         {time, keisan::Point2(target_position.x, target_position.y + width), target_orientation,
-         FootStepPlanner::LEFT_FOOT});
+         LEFT_FOOT});
     } else {
       foot_steps.push_back(
         {time, keisan::Point2(target_position.x, target_position.y - width), target_orientation,
-         FootStepPlanner::RIGHT_FOOT});
+         RIGHT_FOOT});
     }
 
     time += period;
-    next_support = FootStepPlanner::BOTH_FEET;
-    foot_step.push_back({time, target_position, target_orientation, FootStepPlanner::BOTH_FEET});
+    next_support = BOTH_FEET;
+    foot_steps.push_back({time, target_position, target_orientation, BOTH_FEET});
 
     time += 2.0 * period;
-    foot_steps.push_back({time, target_position, target_orientation, FootStepPlanner::BOTH_FEET});
+    foot_steps.push_back({time, target_position, target_orientation, BOTH_FEET});
 
     time += 100.0;
-    foot_steps.push_back({time, target_position, target_orientation, FootStepPlanner::BOTH_FEET});
+    foot_steps.push_back({time, target_position, target_orientation, BOTH_FEET});
   }
-
-  return foot_steps;
 }
 
 }  // namespace gankenkun

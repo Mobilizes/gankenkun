@@ -20,10 +20,12 @@
 
 #include "gankenkun/config/node/config_node.hpp"
 
+#include "jitsuyo/config.hpp"
+
 namespace gankenkun
 {
 
-GankenkunNode::GankenkunNode(
+ConfigNode::ConfigNode(
   const rclcpp::Node::SharedPtr & node, const std::shared_ptr<WalkingManager> & walking_manager,
   const std::string & path)
 : node(node), walking_manager(walking_manager)
@@ -75,7 +77,7 @@ GankenkunNode::GankenkunNode(
 
         RCLCPP_INFO(rclcpp::get_logger("Update config server"), "Config saved");
       } else {
-        walking_manager->set_config(walking_data, kinematic_data);
+        this->walking_manager->set_config(walking_data, kinematic_data);
 
         RCLCPP_INFO(rclcpp::get_logger("Update config server"), "Config updated");
       }

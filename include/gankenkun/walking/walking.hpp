@@ -23,6 +23,7 @@
 
 #include "gankenkun/walking/kinematics/kinematics.hpp"
 #include "gankenkun/walking/node/walking_manager.hpp"
+#include "gankenkun/walking/node/walking_node.hpp"
 #include "gankenkun/walking/planner/foot_step_planner.hpp"
 
 #endif  // GANKENKUN__WALKING__WALKING_HPP_

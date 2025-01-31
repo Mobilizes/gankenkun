@@ -33,7 +33,7 @@ int main(int argc, char * argv[])
   auto node = std::make_shared<rclcpp::Node>("gankenkun");
   auto gankenkun_node = std::make_shared<gankenkun::GankenkunNode>(node);
 
-  auto walking_manager = std::make_shared<gankenkun::WalkingManager>(path);
+  auto walking_manager = std::make_shared<gankenkun::WalkingManager>();
   walking_manager->load_config(path);
 
   gankenkun_node->set_walking_manager(walking_manager);

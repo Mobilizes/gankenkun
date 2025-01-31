@@ -21,6 +21,9 @@
 #ifndef GANKENKUN__LIPM__LIPM_HPP_
 #define GANKENKUN__LIPM__LIPM_HPP_
 
+#include <deque>
+
+#include "gankenkun/walking/planner/foot_step_planner.hpp"
 #include "keisan/matrix.hpp"
 
 namespace gankenkun
@@ -36,11 +39,9 @@ public:
   void solve_dare();
 
   void update(
-    double time, const std::list<FootStepPlanner::FootStep> & foot_steps, bool reset = false);
+    double time, const std::deque<FootStepPlanner::FootStep> & foot_steps, bool reset = false);
 
-  COMTrajectory pop_front();
-
-  const std::vector<COMTrajectory> & get_com_trajectory() const { return com_trajectory; }
+  void set_parameters(double z, double dt, double period);
 
   double dt;
   double period;
@@ -51,6 +52,10 @@ public:
     keisan::Point2 position;
     keisan::Point2 projected_position;
   };
+
+  COMTrajectory pop_front();
+
+  const std::deque<COMTrajectory> & get_com_trajectory() const { return com_trajectory; }
 
 private:
   // Discrete-time system matrices
@@ -66,7 +71,7 @@ private:
   keisan::Matrix<3, 1> x_state;
   keisan::Matrix<3, 1> y_state;
   keisan::Point2 velocity;
-  std::vector<COMTrajectory> com_trajectory;
+  std::deque<COMTrajectory> com_trajectory;
 };
 
 }  // namespace gankenkun

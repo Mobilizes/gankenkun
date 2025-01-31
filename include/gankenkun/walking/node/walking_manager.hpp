@@ -26,6 +26,7 @@
 #include "gankenkun/lipm/lipm.hpp"
 #include "gankenkun/walking/kinematics/kinematics.hpp"
 #include "gankenkun/walking/planner/foot_step_planner.hpp"
+#include "tachimawari/joint/joint.hpp"
 
 namespace gankenkun
 {
@@ -35,7 +36,7 @@ class WalkingManager
 public:
   using FootStep = FootStepPlanner::FootStep;
 
-  WalkingManager(const std::string & path);
+  WalkingManager();
 
   void load_config(const std::string & path);
   void set_config(const nlohmann::json & walking_data, const nlohmann::json & kinematic_data);
@@ -43,7 +44,7 @@ public:
   void stop();
   void update_joints();
 
-  const std::array<keisan::Angle<double>, 19> & get_angles() const;
+  const std::vector<tachimawari::joint::Joint> & get_joints() const { return joints; }
 
   void set_goal(
     const keisan::Point2 & goal_position, const keisan::Angle<double> & goal_orientation);
@@ -55,13 +56,14 @@ private:
 
   int status;
   int next_support;
-  keisan::Angle<double> walk_orientation;
+  keisan::Angle<double> walk_rotation;
 
   // Timing parameters
   double time_step;
   double dsp_duration;
   double ssp_duration;
   double step_frames;
+  double com_period;
 
   // Posture parameters
   double com_height;
@@ -75,9 +77,10 @@ private:
   keisan::Point2 max_stride;
   keisan::Angle<double> max_rotation;
 
-  double foot_width;
   double left_up;
   double right_up;
+
+  std::vector<tachimawari::joint::Joint> joints;
 
   keisan::Matrix<1, 3> left_offset = keisan::Matrix<1, 3>::zero();
   keisan::Matrix<1, 3> left_offset_delta = keisan::Matrix<1, 3>::zero();

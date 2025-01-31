@@ -20,6 +20,8 @@
 
 #include "gankenkun/walking/node/walking_node.hpp"
 
+#include "tachimawari/joint/utils/middleware.hpp"
+
 namespace gankenkun
 {
 
@@ -31,7 +33,8 @@ WalkingNode::WalkingNode(
     "walking/set_walking", 10, [this](const SetWalking::SharedPtr message) {
       if (message->run) {
         this->walking_manager->set_goal(
-          keisan::Point2(message->x, message->y), keisan::Angle<double>(message->a));
+          keisan::Point2(message->position.x, message->position.y),
+          keisan::make_degree(message->orientation));
       } else {
         this->walking_manager->stop();
       }
@@ -39,12 +42,14 @@ WalkingNode::WalkingNode(
 
   set_odometry_subscriber = node->create_subscription<Point2>(
     "walking/set_odometry", 10, [this](const Point2::SharedPtr message) {
-      this->walking_manager->set_position(keisan::Point2(message->x, message->y));
+      // TODO: Set robot odometry
+      // this->walking_manager->set_position(keisan::Point2(message->x, message->y));
     });
 
   orientation_subscriber = node->create_subscription<KanseiStatus>(
     "measurement/status", 10, [this](const KanseiStatus::SharedPtr message) {
-      this->walking_manager->update_orientation(keisan::make_degree(message->orientation.yaw));
+      // TODO: Update robot orientation
+      // this->walking_manager->update_orientation(keisan::make_degree(message->orientation.yaw));
     });
 
   status_publisher = node->create_publisher<WalkingStatus>("walking/status", 10);
@@ -62,7 +67,7 @@ void WalkingNode::publish_joints()
 {
   auto joints_msg = SetJoints();
 
-  const auto & joints = walking_manager->get_angles();
+  const auto & joints = walking_manager->get_joints();
   auto & joint_msgs = joints_msg.joints;
 
   joint_msgs.resize(joints.size());
@@ -80,9 +85,10 @@ void WalkingNode::publish_status()
 {
   auto status_msg = WalkingStatus();
 
-  status_msg.status = walking_manager->get_status();
-  status_msg.odometry.x = walking_manager->get_position().x;
-  status_msg.odometry.y = walking_manager->get_position().y;
+  // TODO: Publish walk status
+  // status_msg.status = walking_manager->get_status();
+  // status_msg.odometry.x = walking_manager->get_position().x;
+  // status_msg.odometry.y = walking_manager->get_position().y;
 
   status_publisher->publish(status_msg);
 }

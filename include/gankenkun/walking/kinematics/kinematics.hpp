@@ -26,6 +26,9 @@
 
 #include "keisan/angle.hpp"
 #include "keisan/geometry/point_3.hpp"
+#include "nlohmann/json.hpp"
+
+using namespace keisan::literals;
 
 namespace gankenkun
 {
@@ -35,7 +38,7 @@ class Kinematics
 public:
   struct Foot
   {
-    keisan::Point3<double> position;
+    keisan::Point3 position;
     keisan::Angle<double> yaw;
 
     Foot() : position(0.0, 0.0, 0.0), yaw(0.0_deg) {}

@@ -23,10 +23,7 @@
 namespace gankenkun
 {
 
-LIPM::LIPM()
-: dt(0.0), period(0.0), z(0.0)
-{
-}
+LIPM::LIPM() : dt(0.0), period(0.0), z(0.0) {}
 
 void LIPM::set_parameters(double z, double dt, double period)
 {
@@ -49,16 +46,10 @@ void LIPM::initialize()
   velocity.y = 0.0;
 
   // Continuous-time system matrices
-  auto A = keisan::Matrix<3, 3>(
-    0.0, 1.0, 0.0,
-    0.0, 0.0, 1.0,
-    0.0, 0.0, 0.0);
+  auto A = keisan::Matrix<3, 3>(0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
 
-  auto B = keisan::Matrix<3, 1>(
-    0.0,
-    0.0,
-    1.0);
-  
+  auto B = keisan::Matrix<3, 1>(0.0, 0.0, 1.0);
+
   auto C = keisan::Matrix<1, 3>(1.0, 0.0, -z / 9.8);
 
   // Discretize the continuous-time system
@@ -66,8 +57,7 @@ void LIPM::initialize()
 
   B_d = keisan::Matrix<3, 1>();
 
-  for (size_t i = 0; i < 10; ++i)
-  {
+  for (size_t i = 0; i < 10; ++i) {
     double tau = dt * (i + 0.5) / 10;
     auto expA = A.exp(tau);
     auto expAB = expA * B;
@@ -80,30 +70,17 @@ void LIPM::initialize()
 // Solve the discrete-time algebraic Riccati equation
 void LIPM::solve_dare()
 {
-  auto E_d = keisan::Matrix<3, 1>(
-    dt,
-    1.0,
-    0.0);
-  
+  auto E_d = keisan::Matrix<3, 1>(dt, 1.0, 0.0);
+
   auto CA_d = -C_d * A_d;
   auto Phai = keisan::Matrix<4, 4>(
-    1.0, CA_d[0][0], CA_d[0][1], CA_d[0][2],
-    0.0, A_d[0][0], A_d[0][1], A_d[0][2],
-    0.0, A_d[1][0], A_d[1][1], A_d[1][2],
-    0.0, A_d[2][0], A_d[2][1], A_d[2][2]);
+    1.0, CA_d[0][0], CA_d[0][1], CA_d[0][2], 0.0, A_d[0][0], A_d[0][1], A_d[0][2], 0.0, A_d[1][0],
+    A_d[1][1], A_d[1][2], 0.0, A_d[2][0], A_d[2][1], A_d[2][2]);
 
   auto CB_d = -C_d * B_d;
-  auto G = keisan::Matrix<4, 1>(
-    CB_d[0][0],
-    B_d[0][0],
-    B_d[1][0],
-    B_d[2][0]);
+  auto G = keisan::Matrix<4, 1>(CB_d[0][0], B_d[0][0], B_d[1][0], B_d[2][0]);
 
-  auto GR = keisan::Matrix<4, 1>(
-    1.0,
-    0.0,
-    0.0,
-    0.0);
+  auto GR = keisan::Matrix<4, 1>(1.0, 0.0, 0.0, 0.0);
 
   auto Qm = keisan::Matrix<4, 4>::zero();
   Qm[0][0] = 1.0e+8;
@@ -112,7 +89,7 @@ void LIPM::solve_dare()
 
   // Iterative DARE solver
   auto P = Qm;
-  
+
   const double tolerance = 1e-9;
   const size_t max_iterations = 1000;
 
@@ -152,14 +129,14 @@ void LIPM::solve_dare()
   auto xiT = ((I - G * T * GTP) * Phai).transpose();
 
   for (int i = 0; i < static_cast<int>(round(period / dt)); i++) {
-    auto fi = (-T) * G.transpose() * xiT.power(i - 1)  * P * GR;
+    auto fi = (-T) * G.transpose() * xiT.power(i - 1) * P * GR;
 
     f.push_back(fi[0][0]);
   }
 }
 
 // Update the LIPM state
-void LIPM::update(double time, const std::list<FootStepPlanner::FootStep> & foot_steps, bool reset)
+void LIPM::update(double time, const std::deque<FootStepPlanner::FootStep> & foot_steps, bool reset)
 {
   if (reset) {
     velocity.x = 0.0;
@@ -170,7 +147,7 @@ void LIPM::update(double time, const std::list<FootStepPlanner::FootStep> & foot
   auto next_x_state = x_state;
   auto next_y_state = y_state;
 
-  for (int i = 0; i < static_cast<int>(round((foot_steps[1].time - t) / dt)); i++) {
+  for (int i = 0; i < static_cast<int>(round((foot_steps[1].time - time) / dt)); i++) {
     auto projected_x = C_d * x_state;
     auto projected_y = C_d * y_state;
 
@@ -178,17 +155,13 @@ void LIPM::update(double time, const std::list<FootStepPlanner::FootStep> & foot
     auto error_y = foot_steps.front().position.y - projected_y[0][0];
 
     auto X = keisan::Matrix<4, 1>(
-      error_x,
-      next_x_state[0][0] - x_state[0][0],
-      next_x_state[1][0] - x_state[1][0],
+      error_x, next_x_state[0][0] - x_state[0][0], next_x_state[1][0] - x_state[1][0],
       next_x_state[2][0] - x_state[2][0]);
 
     auto Y = keisan::Matrix<4, 1>(
-      error_y,
-      next_y_state[0][0] - y_state[0][0],
-      next_y_state[1][0] - y_state[1][0],
+      error_y, next_y_state[0][0] - y_state[0][0], next_y_state[1][0] - y_state[1][0],
       next_y_state[2][0] - y_state[2][0]);
-    
+
     x_state = next_x_state;
     y_state = next_y_state;
 
@@ -197,7 +170,9 @@ void LIPM::update(double time, const std::list<FootStepPlanner::FootStep> & foot
 
     size_t index = 1;
     for (int j = 0; j < static_cast<int>(round(period / dt)); j++) {
-      if (static_cast<int>(round(i+j) + time / dt) >= static_cast<int>(round(foot_steps[index].time / dt))) {
+      if (
+        static_cast<int>(round(i + j) + time / dt) >=
+        static_cast<int>(round(foot_steps[index].time / dt))) {
         dx += f[j] * (foot_steps[index].position.x - foot_steps[index - 1].position.x);
         dy += f[j] * (foot_steps[index].position.y - foot_steps[index - 1].position.y);
         index++;
@@ -222,7 +197,7 @@ void LIPM::update(double time, const std::list<FootStepPlanner::FootStep> & foot
 }
 
 // Pop the front of the COM trajectory
-COMTrajectory LIPM::pop_front()
+LIPM::COMTrajectory LIPM::pop_front()
 {
   auto com = com_trajectory.front();
   com_trajectory.pop_front();
@@ -230,4 +205,4 @@ COMTrajectory LIPM::pop_front()
   return com;
 }
 
-} // namespace gankenkun
+}  // namespace gankenkun

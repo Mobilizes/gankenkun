@@ -21,6 +21,8 @@
 #ifndef GANKENKUN__WALKING__PLANNER__FOOT_STEP_PLANNER_HPP_
 #define GANKENKUN__WALKING__PLANNER__FOOT_STEP_PLANNER_HPP_
 
+#include <deque>
+
 #include "keisan/angle.hpp"
 #include "keisan/geometry/point_2.hpp"
 
@@ -30,17 +32,9 @@ namespace gankenkun
 class FootStepPlanner
 {
 public:
-  enum {
-    LEFT_FOOT = 0,
-    RIGHT_FOOT = 1,
-    BOTH_FEET = 2
-  }
+  enum { LEFT_FOOT = 0, RIGHT_FOOT = 1, BOTH_FEET = 2 };
 
-  enum {
-    START = 0,
-    WALKING = 1,
-    STOP = 2
-  }
+  enum { START = 0, WALKING = 1, STOP = 2 };
 
   struct FootStep
   {
@@ -48,7 +42,7 @@ public:
     keisan::Point2 position;
     keisan::Angle<double> rotation;
     int support_foot;
-  }
+  };
 
   FootStepPlanner();
 
@@ -58,10 +52,10 @@ public:
 
   void plan(
     const keisan::Point2 & target_position, const keisan::Angle<double> & target_orientation,
-    const keisan::Point2 & current_position, const keisan::Angle<double> & current_orientation,
+    keisan::Point2 & current_position, keisan::Angle<double> & current_orientation,
     int next_support, int status);
 
-  std::list<FootStep> foot_steps;
+  std::deque<FootStep> foot_steps;
 
 private:
   keisan::Point2 max_stride;

@@ -26,6 +26,11 @@
 #include <string>
 
 #include "gankenkun/walking/node/walking_manager.hpp"
+#include "gankenkun_interfaces/msg/point2.hpp"
+#include "gankenkun_interfaces/msg/set_walking.hpp"
+#include "gankenkun_interfaces/msg/status.hpp"
+#include "kansei_interfaces/msg/status.hpp"
+#include "tachimawari_interfaces/msg/set_joints.hpp"
 
 namespace gankenkun
 {
@@ -34,7 +39,7 @@ class WalkingNode
 {
 public:
   using SetJoints = tachimawari_interfaces::msg::SetJoints;
-  using WalkingStatus = gankenkun_interfaces::msg::WalkingStatus;
+  using WalkingStatus = gankenkun_interfaces::msg::Status;
   using Point2 = gankenkun_interfaces::msg::Point2;
   using KanseiStatus = kansei_interfaces::msg::Status;
   using SetWalking = gankenkun_interfaces::msg::SetWalking;
@@ -52,8 +57,9 @@ private:
 
   rclcpp::Node::SharedPtr node;
 
-  rclcpp::Subscription<Point2>::SharedPtr set_walking_subscriber;
+  rclcpp::Subscription<SetWalking>::SharedPtr set_walking_subscriber;
   rclcpp::Subscription<Point2>::SharedPtr set_odometry_subscriber;
+  rclcpp::Subscription<KanseiStatus>::SharedPtr orientation_subscriber;
 
   rclcpp::Publisher<SetJoints>::SharedPtr set_joints_publisher;
   rclcpp::Publisher<WalkingStatus>::SharedPtr status_publisher;

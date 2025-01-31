@@ -20,6 +20,10 @@
 
 #include "gankenkun/walking/kinematics/kinematics.hpp"
 
+#include "jitsuyo/config.hpp"
+#include "tachimawari/joint/model/joint.hpp"
+#include "tachimawari/joint/model/joint_id.hpp"
+
 namespace gankenkun
 {
 
@@ -62,6 +66,8 @@ void Kinematics::set_config(const nlohmann::json & kinematic_data)
 
 void Kinematics::solve_inverse_kinematics(const Foot & left_foot, const Foot & right_foot)
 {
+  using tachimawari::joint::JointId;
+
   double left_x = left_foot.position.x - x_offset;
   double left_y = left_foot.position.y - y_offset;
   double left_z = ankle_length + calf_length + knee_length + thigh_length - left_foot.position.z;
@@ -108,7 +114,7 @@ void Kinematics::solve_inverse_kinematics(const Foot & left_foot, const Foot & r
   double right2 = right_y2 * right_y2 + right_z2 * right_z2;
   double right_z3 = std::sqrt(std::max(0.0, right2 - right_x2 * right_x2)) - knee_length;
 
-  pitch = std::atan2(right_x2, right_z3);
+  pitch = keisan::signed_arctan(right_x2, right_z3);
   length = std::hypot(right_x2, right_z3);
   knee_disp = acos((std::min(std::max(length / (2.0 * thigh_length), -1.0), 1.0)));
 

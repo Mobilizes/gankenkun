@@ -22,6 +22,7 @@
 #define GANKENKUN__GANKENKUN_HPP_
 
 #include "gankenkun/lipm/lipm.hpp"
+#include "gankenkun/node/gankenkun_node.hpp"
 #include "gankenkun/walking/walking.hpp"
 
 #endif  // GANKENKUN__GANKENKUN_HPP_

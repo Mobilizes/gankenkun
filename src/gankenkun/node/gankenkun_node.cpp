@@ -20,6 +20,10 @@
 
 #include "gankenkun/node/gankenkun_node.hpp"
 
+#include <chrono>
+
+using namespace std::chrono_literals;
+
 namespace gankenkun
 {
 
@@ -31,7 +35,7 @@ GankenkunNode::GankenkunNode(const rclcpp::Node::SharedPtr & node)
   });
 }
 
-void GankenkunNode::set_walking_manager(std::shared_ptr<WalkingManager> walking_manager)
+void GankenkunNode::set_walking_manager(const std::shared_ptr<WalkingManager> & walking_manager)
 {
   this->walking_manager = walking_manager;
   walking_node = std::make_shared<WalkingNode>(node, walking_manager);
@@ -39,7 +43,7 @@ void GankenkunNode::set_walking_manager(std::shared_ptr<WalkingManager> walking_
 
 void GankenkunNode::run_config_service(const std::string & path)
 {
-  config_node = std::make_shared<ConfigNode>(node, path, walking_node, walking_manager);
+  config_node = std::make_shared<ConfigNode>(node, walking_manager, path);
 }
 
 }  // namespace gankenkun
