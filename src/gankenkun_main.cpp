@@ -28,6 +28,12 @@ int main(int argc, char * argv[])
 {
   auto args = rclcpp::init_and_remove_ros_arguments(argc, argv);
 
+  if (args.size() < 2) {
+    std::cerr << "Missing config path!" << std::endl;
+
+    return 0;
+  }
+
   const std::string & path = args[1];
 
   auto node = std::make_shared<rclcpp::Node>("gankenkun");
