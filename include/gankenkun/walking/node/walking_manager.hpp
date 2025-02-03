@@ -55,13 +55,14 @@ private:
   FootStepPlanner foot_step_planner;
 
   int status;
+  bool initialized;
   int next_support;
   keisan::Angle<double> walk_rotation;
 
   // Timing parameters
   double time_step;
   double dsp_duration;
-  double ssp_duration;
+  double plan_period;
   double step_frames;
   double com_period;
 
@@ -89,6 +90,11 @@ private:
   keisan::Matrix<1, 3> right_offset = keisan::Matrix<1, 3>::zero();
   keisan::Matrix<1, 3> right_offset_delta = keisan::Matrix<1, 3>::zero();
   keisan::Matrix<1, 3> right_foot_target = keisan::Matrix<1, 3>::zero();
+
+  keisan::Point3 initial_left_foot =
+    keisan::Point3(-0.04360000000000016, 0.0495, 0.011499999999999982);
+  keisan::Point3 initial_right_foot =
+    keisan::Point3(-0.04360000000000016, -0.0495, 0.011499999999999982);
 };
 
 }  // namespace gankenkun
