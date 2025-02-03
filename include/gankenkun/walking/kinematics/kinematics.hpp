@@ -41,15 +41,16 @@ public:
     keisan::Point3 position;
     keisan::Angle<double> yaw;
 
-    Foot() : position(0.0, 0.0, 0.0), yaw(0.0_deg) {}
+    Foot() : position(keisan::Point3(0.0, 0.0, 0.0)), yaw(0.0_deg) {}
   };
 
-  Kinematics() {}
+  Kinematics();
 
+  void reset_angles();
   void set_config(const nlohmann::json & kinematic_data);
   void solve_inverse_kinematics(const Foot & left_foot, const Foot & right_foot);
 
-  const std::array<keisan::Angle<double>, 19> & get_angles() const { return angles; }
+  const std::array<keisan::Angle<double>, 23> & get_angles() const { return angles; }
 
 private:
   double ankle_length;
@@ -60,7 +61,7 @@ private:
   double x_offset;
   double y_offset;
 
-  std::array<keisan::Angle<double>, 19> angles;
+  std::array<keisan::Angle<double>, 23> angles;
 };
 
 }  // namespace gankenkun

@@ -27,6 +27,29 @@
 namespace gankenkun
 {
 
+Kinematics::Kinematics()
+: ankle_length(0.0),
+  calf_length(0.0),
+  knee_length(0.0),
+  thigh_length(0.0),
+  x_offset(0.0),
+  y_offset(0.0)
+{
+  reset_angles();
+}
+
+void Kinematics::reset_angles()
+{
+  for (auto & angle : angles) {
+    angle = 0_deg;
+  }
+
+  using tachimawari::joint::JointId;
+
+  angles[JointId::NECK_YAW] = 0.0_deg;
+  angles[JointId::NECK_PITCH] = 0.0_deg;
+}
+
 void Kinematics::set_config(const nlohmann::json & kinematic_data)
 {
   bool valid_config = true;
@@ -77,7 +100,7 @@ void Kinematics::solve_inverse_kinematics(const Foot & left_foot, const Foot & r
   double left_z2 = left_z - ankle_length;
 
   // Hip roll angle
-  keisan::Angle<double> hip_roll = keisan::signed_arctan(left_z2, left_y2);
+  keisan::Angle<double> hip_roll = keisan::signed_arctan(left_y2, left_z2);
 
   double left2 = left_y2 * left_y2 + left_z2 * left_z2;
   double left_z3 = std::sqrt(std::max(0.0, left2 - left_x2 * left_x2)) - knee_length;
@@ -109,7 +132,7 @@ void Kinematics::solve_inverse_kinematics(const Foot & left_foot, const Foot & r
   double right_z2 = right_z - ankle_length;
 
   // Hip roll angle
-  hip_roll = keisan::signed_arctan(right_z2, right_y2);
+  hip_roll = keisan::signed_arctan(right_y2, right_z2);
 
   double right2 = right_y2 * right_y2 + right_z2 * right_z2;
   double right_z3 = std::sqrt(std::max(0.0, right2 - right_x2 * right_x2)) - knee_length;
