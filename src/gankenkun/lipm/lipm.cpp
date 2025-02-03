@@ -55,7 +55,7 @@ void LIPM::initialize()
   // Discretize the continuous-time system
   A_d = A.exp(dt);
 
-  B_d = keisan::Matrix<3, 1>();
+  B_d = keisan::Matrix<3, 1>::zero();
 
   for (size_t i = 0; i < 10; ++i) {
     double tau = dt * (i + 0.5) / 10;
@@ -148,8 +148,8 @@ void LIPM::update(double time, const std::deque<FootStepPlanner::FootStep> & foo
   auto next_y_state = y_state;
 
   for (int i = 0; i < static_cast<int>(round((foot_steps[1].time - time) / dt)); i++) {
-    auto projected_x = C_d * x_state;
-    auto projected_y = C_d * y_state;
+    auto projected_x = C_d * next_x_state;
+    auto projected_y = C_d * next_y_state;
 
     auto error_x = foot_steps.front().position.x - projected_x[0][0];
     auto error_y = foot_steps.front().position.y - projected_y[0][0];
@@ -182,8 +182,8 @@ void LIPM::update(double time, const std::deque<FootStepPlanner::FootStep> & foo
     velocity.x += dx[0][0];
     velocity.y += dy[0][0];
 
-    next_x_state = A_d * x_state + B_d * dx;
-    next_y_state = A_d * y_state + B_d * dy;
+    next_x_state = A_d * x_state + B_d * velocity.x;
+    next_y_state = A_d * y_state + B_d * velocity.y;
 
     auto com = COMTrajectory();
 
