@@ -55,6 +55,8 @@ public:
     keisan::Point2 & current_position, keisan::Angle<double> & current_orientation,
     int next_support, int status);
 
+  void print_foot_steps();
+
   std::deque<FootStep> foot_steps;
 
 private:

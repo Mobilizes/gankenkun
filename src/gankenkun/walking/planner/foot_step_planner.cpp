@@ -145,4 +145,19 @@ void FootStepPlanner::plan(
   }
 }
 
+void FootStepPlanner::print_foot_steps()
+{
+  size_t counter = 1;
+  for (const auto & step : foot_steps) {
+    std::string support = step.support_foot == RIGHT_FOOT  ? "right"
+                          : step.support_foot == LEFT_FOOT ? "left"
+                                                           : "both";
+
+    std::cout << "Step " << counter++ << "-> Time(" << step.time << "); Position("
+              << step.position.x << ", " << step.position.y << "); Rotation("
+              << step.rotation.radian() << "); "
+              << "Support(\'" << support << "\')\n";
+  }
+}
+
 }  // namespace gankenkun
