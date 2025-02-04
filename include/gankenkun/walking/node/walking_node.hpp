@@ -63,6 +63,8 @@ private:
 
   rclcpp::Publisher<SetJoints>::SharedPtr set_joints_publisher;
   rclcpp::Publisher<WalkingStatus>::SharedPtr status_publisher;
+
+  rclcpp::CallbackGroup::SharedPtr set_walking_group;
 };
 
 }  // namespace gankenkun

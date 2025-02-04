@@ -45,7 +45,11 @@ int main(int argc, char * argv[])
   gankenkun_node->set_walking_manager(walking_manager);
   gankenkun_node->run_config_service(path);
 
-  rclcpp::spin(node);
+  auto executor = std::make_shared<rclcpp::executors::MultiThreadedExecutor>();
+
+  executor->add_node(node);
+  executor->spin();
+
   rclcpp::shutdown();
 
   return 0;

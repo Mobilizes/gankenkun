@@ -29,27 +29,40 @@ WalkingNode::WalkingNode(
   const rclcpp::Node::SharedPtr & node, const std::shared_ptr<WalkingManager> & walking_manager)
 : node(node), walking_manager(walking_manager)
 {
+  set_walking_group = node->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+
+  auto subscriber_option = rclcpp::SubscriptionOptions();
+  subscriber_option.callback_group = set_walking_group;
+
   set_walking_subscriber = node->create_subscription<SetWalking>(
-    "walking/set_walking", 10, [this](const SetWalking::SharedPtr message) {
-      if (message->run) {
-        this->walking_manager->set_goal(
-          keisan::Point2(message->position.x, message->position.y),
-          keisan::make_degree(message->orientation));
-      } else {
-        this->walking_manager->stop();
+    "walking/set_walking", 10,
+    [this](const SetWalking::SharedPtr message) {
+      while (true) {
+        if (this->walking_manager->replan()) {
+          if (message->run) {
+            this->walking_manager->set_goal(
+              keisan::Point2(message->position.x, message->position.y),
+              keisan::make_degree(message->orientation));
+          } else {
+            this->walking_manager->stop();
+          }
+
+          return;
+        }
       }
-    });
+    },
+    subscriber_option);
 
   set_odometry_subscriber = node->create_subscription<Point2>(
     "walking/set_odometry", 10, [this](const Point2::SharedPtr message) {
       // TODO: Set robot odometry
-      // this->walking_manager->set_position(keisan::Point2(message->x, message->y));
+      this->walking_manager->set_position(keisan::Point2(message->x, message->y));
     });
 
   orientation_subscriber = node->create_subscription<KanseiStatus>(
     "measurement/status", 10, [this](const KanseiStatus::SharedPtr message) {
       // TODO: Update robot orientation
-      // this->walking_manager->update_orientation(keisan::make_degree(message->orientation.yaw));
+      this->walking_manager->set_orientation(keisan::make_degree(message->orientation.yaw));
     });
 
   status_publisher = node->create_publisher<WalkingStatus>("walking/status", 10);
@@ -85,10 +98,9 @@ void WalkingNode::publish_status()
 {
   auto status_msg = WalkingStatus();
 
-  // TODO: Publish walk status
-  // status_msg.status = walking_manager->get_status();
-  // status_msg.odometry.x = walking_manager->get_position().x;
-  // status_msg.odometry.y = walking_manager->get_position().y;
+  status_msg.is_running = walking_manager->is_running();
+  status_msg.odometry.x = walking_manager->get_position().x;
+  status_msg.odometry.y = walking_manager->get_position().y;
 
   status_publisher->publish(status_msg);
 }
