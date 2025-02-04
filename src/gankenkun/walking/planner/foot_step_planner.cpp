@@ -47,12 +47,11 @@ void FootStepPlanner::plan(
 {
   // Calculate the number of foot step
   double time = 0.0;
-  double goal_distance = (target_position - current_position).magnitude();
 
   double steps_x = std::abs((target_position.x - current_position.x) / max_stride.x);
   double steps_y = std::abs((target_position.y - current_position.y) / max_stride.y);
   double steps_angle =
-    std::abs(((target_orientation - current_orientation).degree()) / max_rotation.degree());
+    std::abs(((target_orientation - current_orientation).radian()) / max_rotation.radian());
   int max_steps = std::max(std::max(steps_x, steps_y), steps_angle);
 
   double stride_x = 0.0;
@@ -62,7 +61,7 @@ void FootStepPlanner::plan(
   if (max_steps > 0) {
     stride_x = (target_position.x - current_position.x) / max_steps;
     stride_y = (target_position.y - current_position.y) / max_steps;
-    stride_angle = (target_orientation.degree() - current_orientation.degree()) / max_steps;
+    stride_angle = (target_orientation - current_orientation).radian() / max_steps;
   }
 
   // Plan first foot step
@@ -89,19 +88,18 @@ void FootStepPlanner::plan(
   while (true) {
     counter += 1;
 
-    auto delta_position = target_position - current_position;
-    auto delta_orientation = target_orientation - current_orientation;
+    double delta_x = std::abs(target_position.x - current_position.x);
+    double delta_y = std::abs(target_position.y - current_position.y);
+    double delta_angle = std::abs((target_orientation - current_orientation).radian());
 
-    if (
-      delta_position.x < max_stride.x && delta_position.y < max_stride.y &&
-      delta_orientation < max_rotation) {
+    if (delta_x < max_stride.x && delta_y < max_stride.y && delta_angle < max_rotation.radian()) {
       break;
     }
 
     time += period;
 
     auto next_position = current_position + keisan::Point2(stride_x, stride_y);
-    auto next_orientation = current_orientation + keisan::make_degree(stride_angle);
+    auto next_orientation = current_orientation + keisan::make_radian(stride_angle);
 
     if (next_support == LEFT_FOOT) {
       foot_steps.push_back(
