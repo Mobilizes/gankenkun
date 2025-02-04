@@ -42,12 +42,22 @@ public:
   void set_config(const nlohmann::json & walking_data, const nlohmann::json & kinematic_data);
 
   void stop();
+  void update_time();
   void update_joints();
+  void process();
+  bool replan();
 
   const std::vector<tachimawari::joint::Joint> & get_joints() const { return joints; }
 
+  void remove_steps();
   void set_goal(
     const keisan::Point2 & goal_position, const keisan::Angle<double> & goal_orientation);
+
+  void set_position(const keisan::Point2 & position);
+  void set_orientation(const keisan::Angle<double> & orientation);
+
+  const keisan::Point2 & get_position() const { return robot_position; }
+  bool is_running();
 
 private:
   Kinematics kinematics;
@@ -57,7 +67,8 @@ private:
   int status;
   bool initialized;
   int next_support;
-  keisan::Angle<double> walk_rotation;
+  keisan::Point2 robot_position;
+  keisan::Angle<double> robot_orientation;
 
   // Timing parameters
   double time_step;
@@ -72,7 +83,8 @@ private:
   double feet_lateral;
 
   // Offset parameters
-  double foot_y_offset;
+  keisan::Point3 foot_offset;
+  double step_y_offset;
 
   // Maximum stride parameters
   keisan::Point2 max_stride;
@@ -90,11 +102,6 @@ private:
   keisan::Matrix<1, 3> right_offset = keisan::Matrix<1, 3>::zero();
   keisan::Matrix<1, 3> right_offset_delta = keisan::Matrix<1, 3>::zero();
   keisan::Matrix<1, 3> right_foot_target = keisan::Matrix<1, 3>::zero();
-
-  keisan::Point3 initial_left_foot =
-    keisan::Point3(-0.04360000000000016, 0.0495, 0.011499999999999982);
-  keisan::Point3 initial_right_foot =
-    keisan::Point3(-0.04360000000000016, -0.0495, 0.011499999999999982);
 };
 
 }  // namespace gankenkun

@@ -32,8 +32,8 @@ GankenkunNode::GankenkunNode(const rclcpp::Node::SharedPtr & node)
 {
   node_timer = node->create_wall_timer(8ms, [this]() {
     if (this->walking_manager && walking_node) {
-      this->walking_manager->update_joints();
-      this->walking_node->update();  // TODO: differentiate joint and status update
+      this->walking_manager->process();
+      this->walking_node->update();
     }
   });
 }
