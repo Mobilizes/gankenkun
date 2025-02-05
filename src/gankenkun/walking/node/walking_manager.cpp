@@ -46,6 +46,7 @@ WalkingManager::WalkingManager()
   feet_lateral(0.0),
   foot_offset(keisan::Point3(0.0, 0.0, 0.0)),
   step_y_offset(0.0),
+  odometry_offset(keisan::Point2(0.0, 0.0)),
   max_stride(keisan::Point2(0.0, 0.0)),
   max_rotation(0.0_deg)
 {
@@ -119,6 +120,8 @@ void WalkingManager::set_config(
     valid_section &= jitsuyo::assign_val(offset_section, "foot_y_offset", foot_offset.y);
     valid_section &= jitsuyo::assign_val(offset_section, "foot_z_offset", foot_offset.z);
     valid_section &= jitsuyo::assign_val(offset_section, "step_y_offset", step_y_offset);
+    valid_section &= jitsuyo::assign_val(offset_section, "odometry_x_offset", odometry_offset.x);
+    valid_section &= jitsuyo::assign_val(offset_section, "odometry_y_offset", odometry_offset.y);
 
     if (!valid_section) {
       std::cout << "Error found at section `offset`" << std::endl;
@@ -328,8 +331,7 @@ void WalkingManager::update_joints()
       joint.set_position(angles[id].degree());
     }
 
-    robot_position = com.position;
-
+    robot_position = com.position + odometry_offset;
   } catch (const std::exception & e) {
     std::cerr << "Failed to solve inverse kinematics!" << std::endl;
     std::cerr << e.what() << std::endl;

@@ -85,6 +85,7 @@ private:
   // Offset parameters
   keisan::Point3 foot_offset;
   double step_y_offset;
+  keisan::Point2 odometry_offset;
 
   // Maximum stride parameters
   keisan::Point2 max_stride;
