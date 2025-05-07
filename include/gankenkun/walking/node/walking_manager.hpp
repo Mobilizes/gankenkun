@@ -91,6 +91,10 @@ private:
   keisan::Point2 max_stride;
   keisan::Angle<double> max_rotation;
 
+  // COM specific parameters
+  keisan::Point2 zmp_limit;
+  int horizon;
+
   double left_up;
   double right_up;
 

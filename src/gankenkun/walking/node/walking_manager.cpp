@@ -151,13 +151,29 @@ void WalkingManager::set_config(
     valid_config = false;
   }
 
+  nlohmann::json com_section;
+  if (jitsuyo::assign_val(walking_data, "com", com_section)) {
+    bool valid_section = true;
+
+    valid_section &= jitsuyo::assign_val(com_section, "zmp_limit_x", zmp_limit.x);
+    valid_section &= jitsuyo::assign_val(com_section, "zmp_limit_y", zmp_limit.y);
+    valid_section &= jitsuyo::assign_val(com_section, "horizon", horizon);
+
+    if (!valid_section) {
+      std::cout << "Error found at section `com`" << std::endl;
+      valid_config = false;
+    }
+  } else {
+    valid_config = false;
+  }
+
   if (!valid_config) {
     throw std::runtime_error("Failed to load config file `walking.json`");
   }
 
   foot_step_planner.set_parameters(max_stride, max_rotation, plan_period, step_y_offset);
 
-  lipm.set_parameters(com_height, time_step, com_period);
+  lipm.set_parameters(com_height, time_step, com_period, zmp_limit, horizon);
 
   kinematics.set_config(kinematic_data);
 }

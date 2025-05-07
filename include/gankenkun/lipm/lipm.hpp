@@ -36,21 +36,26 @@ public:
   ~LIPM() {}
 
   void initialize();
-  void solve_dare();
 
   void update(
     double time, const std::deque<FootStepPlanner::FootStep> & foot_steps, bool reset = false);
 
-  void set_parameters(double z, double dt, double period);
+  void set_parameters(
+    double z, double dt, double period, keisan::Point2 foot_size, int preview_steps);
 
   double dt;
   double period;
   double z;
 
+  keisan::Point2 zmp_limit;
+  int horizon;
+
   struct COMTrajectory
   {
     keisan::Point2 position;
     keisan::Point2 projected_position;
+    keisan::Matrix<3, 1> x_state;
+    keisan::Matrix<3, 1> y_state;
   };
 
   COMTrajectory pop_front();
@@ -58,19 +63,9 @@ public:
   const std::deque<COMTrajectory> & get_com_trajectory() const { return com_trajectory; }
 
 private:
-  // Discrete-time system matrices
-  keisan::Matrix<3, 3> A_d;
-  keisan::Matrix<3, 1> B_d;
-  keisan::Matrix<1, 3> C_d;
-
-  // Gain matrix
-  keisan::Matrix<1, 4> F;  // Feedback gain
-  std::vector<double> f;   // Preview gain
-
   // Outputs
   keisan::Matrix<3, 1> x_state;
   keisan::Matrix<3, 1> y_state;
-  keisan::Point2 velocity;
   std::deque<COMTrajectory> com_trajectory;
 };
 
