@@ -191,11 +191,11 @@ void WalkingManager::stop() { set_goal(robot_position, robot_orientation); }
 
 void WalkingManager::remove_steps()
 {
-  if (foot_step_planner.foot_steps.size() <= 4) {
+  if (foot_step_planner.foot_steps.size() <= 5) {
     status = FootStepPlanner::START;
   }
 
-  if (foot_step_planner.foot_steps.size() > 3) {
+  if (foot_step_planner.foot_steps.size() > 4) {
     foot_step_planner.foot_steps.pop_front();
   }
 }
@@ -215,9 +215,9 @@ void WalkingManager::set_goal(
       y_offset = next_support == FootStepPlanner::LEFT_FOOT ? -step_y_offset : step_y_offset;
     }
 
-    current_position.x = foot_step_planner.foot_steps[1].position.x;
-    current_position.y = foot_step_planner.foot_steps[1].position.y + y_offset;
-    current_orientation = foot_step_planner.foot_steps[1].rotation;
+    current_position.x = foot_step_planner.foot_steps[2].position.x;
+    current_position.y = foot_step_planner.foot_steps[2].position.y + y_offset;
+    current_orientation = foot_step_planner.foot_steps[2].rotation;
   }
 
   foot_step_planner.plan(
@@ -230,40 +230,40 @@ void WalkingManager::set_goal(
 
 void WalkingManager::update_time()
 {
-  double time = foot_step_planner.foot_steps[0].time;
+  double time = foot_step_planner.foot_steps[1].time;
   lipm.update(time, foot_step_planner.foot_steps);
 
-  if (foot_step_planner.foot_steps[0].support_foot == FootStepPlanner::LEFT_FOOT) {
-    if (foot_step_planner.foot_steps[1].support_foot == FootStepPlanner::BOTH_FEET) {
+  if (foot_step_planner.foot_steps[1].support_foot == FootStepPlanner::LEFT_FOOT) {
+    if (foot_step_planner.foot_steps[2].support_foot == FootStepPlanner::BOTH_FEET) {
       right_foot_target = keisan::Matrix<1, 3>(
-        foot_step_planner.foot_steps[1].position.x, foot_step_planner.foot_steps[1].position.y,
-        foot_step_planner.foot_steps[1].rotation.radian());
+        foot_step_planner.foot_steps[2].position.x, foot_step_planner.foot_steps[2].position.y,
+        foot_step_planner.foot_steps[2].rotation.radian());
     } else {
       right_foot_target = keisan::Matrix<1, 3>(
-        foot_step_planner.foot_steps[1].position.x,
-        foot_step_planner.foot_steps[1].position.y + step_y_offset,
-        foot_step_planner.foot_steps[1].rotation.radian());
+        foot_step_planner.foot_steps[2].position.x,
+        foot_step_planner.foot_steps[2].position.y + step_y_offset,
+        foot_step_planner.foot_steps[2].rotation.radian());
     }
 
     right_offset_delta = (right_foot_target - right_offset) / step_frames;
     next_support = FootStepPlanner::RIGHT_FOOT;
-  } else if (foot_step_planner.foot_steps[0].support_foot == FootStepPlanner::RIGHT_FOOT) {
-    if (foot_step_planner.foot_steps[1].support_foot == FootStepPlanner::BOTH_FEET) {
+  } else if (foot_step_planner.foot_steps[1].support_foot == FootStepPlanner::RIGHT_FOOT) {
+    if (foot_step_planner.foot_steps[2].support_foot == FootStepPlanner::BOTH_FEET) {
       left_foot_target = keisan::Matrix<1, 3>(
-        foot_step_planner.foot_steps[1].position.x, foot_step_planner.foot_steps[1].position.y,
-        foot_step_planner.foot_steps[1].rotation.radian());
+        foot_step_planner.foot_steps[2].position.x, foot_step_planner.foot_steps[2].position.y,
+        foot_step_planner.foot_steps[2].rotation.radian());
     } else {
       left_foot_target = keisan::Matrix<1, 3>(
-        foot_step_planner.foot_steps[1].position.x,
-        foot_step_planner.foot_steps[1].position.y - step_y_offset,
-        foot_step_planner.foot_steps[1].rotation.radian());
+        foot_step_planner.foot_steps[2].position.x,
+        foot_step_planner.foot_steps[2].position.y - step_y_offset,
+        foot_step_planner.foot_steps[2].rotation.radian());
     }
 
     left_offset_delta = (left_foot_target - left_offset) / step_frames;
     next_support = FootStepPlanner::LEFT_FOOT;
   }
 
-  robot_orientation = foot_step_planner.foot_steps[0].rotation;
+  robot_orientation = foot_step_planner.foot_steps[1].rotation;
 }
 
 void WalkingManager::update_joints()
@@ -271,10 +271,10 @@ void WalkingManager::update_joints()
   auto com = lipm.pop_front();
 
   double step_period = round(
-    (foot_step_planner.foot_steps[1].time - foot_step_planner.foot_steps[0].time) / time_step);
+    (foot_step_planner.foot_steps[2].time - foot_step_planner.foot_steps[1].time) / time_step);
 
   auto rotation =
-    foot_step_planner.foot_steps[1].rotation - foot_step_planner.foot_steps[0].rotation;
+    foot_step_planner.foot_steps[2].rotation - foot_step_planner.foot_steps[1].rotation;
   rotation /= step_period;
   robot_orientation += rotation;
 
@@ -282,7 +282,7 @@ void WalkingManager::update_joints()
   double ssp_end = round(step_period / 2);
   double ssp_duration = ssp_end - ssp_start;
 
-  if (foot_step_planner.foot_steps[0].support_foot == FootStepPlanner::LEFT_FOOT) {
+  if (foot_step_planner.foot_steps[1].support_foot == FootStepPlanner::LEFT_FOOT) {
     // Raise or lower right foot
     double diff = step_period - lipm.get_com_trajectory().size();
     if (ssp_start < diff && diff <= ssp_end) {
@@ -299,7 +299,7 @@ void WalkingManager::update_joints()
         right_offset = right_foot_target;
       }
     }
-  } else if (foot_step_planner.foot_steps[0].support_foot == FootStepPlanner::RIGHT_FOOT) {
+  } else if (foot_step_planner.foot_steps[1].support_foot == FootStepPlanner::RIGHT_FOOT) {
     // Raise or lower left foot
     double diff = step_period - lipm.get_com_trajectory().size();
     if (ssp_start < diff && diff <= ssp_end) {
@@ -347,7 +347,7 @@ void WalkingManager::update_joints()
       joint.set_position(angles[id].degree());
     }
 
-    robot_position = com.position + odometry_offset;
+    robot_position = com.position;
   } catch (const std::exception & e) {
     std::cerr << "Failed to solve inverse kinematics!" << std::endl;
     std::cerr << e.what() << std::endl;

@@ -68,6 +68,7 @@ void FootStepPlanner::plan(
   foot_steps.clear();
   if (status == START) {
     foot_steps.push_back({0.0, current_position, current_orientation, BOTH_FEET});
+    foot_steps.push_back({0.0, current_position, current_orientation, BOTH_FEET});
     time += period * 2;
   }
 

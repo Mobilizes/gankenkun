@@ -40,8 +40,7 @@ public:
   void update(
     double time, const std::deque<FootStepPlanner::FootStep> & foot_steps, bool reset = false);
 
-  void set_parameters(
-    double z, double dt, double period, keisan::Point2 foot_size, int preview_steps);
+  void set_parameters(double z, double dt, double period, keisan::Point2 foot_size, int horizon);
 
   double dt;
   double period;
