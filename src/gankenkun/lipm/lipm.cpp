@@ -145,15 +145,26 @@ void LIPM::update(double time, const std::deque<FootStepPlanner::FootStep> & foo
     com.y_state[1][0] = vel.y;
     com.y_state[2][0] = acc.y;
 
-    std::cout << "current horizon : " << current_horizon << "/"
-              << static_cast<int>(round((foot_steps.back().time - time) / dt)) << std::endl;
-    std::cout << "horizon to next step : " << static_cast<int>(round((foot_steps[2].time - time) / dt)) << std::endl;
-    std::cout << "x state : " << pos.x << ", " << vel.x << ", " << acc.x << std::endl;
-    std::cout << "y state : " << pos.y << ", " << vel.y << ", " << acc.y << std::endl;
-    std::cout << "-------------------------------------------------------------" << std::endl;
-
     com_trajectory.push_back(com);
   }
+
+  std::cout << "current horizon : " << current_horizon << "/"
+            << static_cast<int>(round((foot_steps.back().time - time) / dt)) << std::endl;
+  std::cout << "horizon to next step : "
+            << static_cast<int>(round((foot_steps[2].time - time) / dt)) << std::endl;
+  std::cout << "x state : " << com_trajectory.back().x_state[0][0] << ", "
+            << com_trajectory.back().x_state[1][0] << ", " << com_trajectory.back().x_state[2][0]
+            << std::endl;
+  std::cout << "y state : " << com_trajectory.back().y_state[0][0] << ", "
+            << com_trajectory.back().y_state[1][0] << ", " << com_trajectory.back().y_state[2][0]
+            << std::endl;
+  std::cout << "previous footstep : " << foot_steps[0].position.x << ", "
+            << foot_steps[0].position.y << std::endl;
+  std::cout << "current footstep : " << foot_steps[1].position.x << ", "
+            << foot_steps[1].position.y << std::endl;
+  std::cout << "next footstep : " << foot_steps[2].position.x << ", "
+            << foot_steps[2].position.y << std::endl;
+  std::cout << "-------------------------------------------------------------" << std::endl;
 }
 
 // Pop the front of the COM trajectory
